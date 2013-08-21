@@ -19,7 +19,7 @@ describe User do					# Different tasks to perform on User instance
    	it { should respond_to(:password_confirmation) }
    	it { should respond_to(:authenticate) }
 
-	it { should be_valid }
+	it { should be_valid }				# Finally all should be valid 
 
 # What to do in a situation when password is not present?
    describe "when password is not present" do
@@ -36,6 +36,7 @@ describe User do					# Different tasks to perform on User instance
     it { should_not be_valid }
   end
 
+# When a password is too short than 6 characters?
   describe "with a password that's too short" do
     before { @user.password = @user.password_confirmation = "a" * 5 }
     it { should be_invalid }
@@ -70,11 +71,13 @@ describe User do					# Different tasks to perform on User instance
      it { should_not be_valid }
    end 
 
+# What to do when email is not present at all NOT empty.
    describe "when email is not present" do
      before { @user.email = ""}
      it { should_not be_valid }
    end
 
+# What to do when email is already taken by some one else? It checks on duplication..
    describe "when email address is already taken" do
      before do
        user_with_same_email = @user.dup
@@ -84,6 +87,7 @@ describe User do					# Different tasks to perform on User instance
        it { should_not be_valid }
    end
 
+# What to do when email format is invalid? 
    describe "when email format is invalid" do
       it "should be invalid" do
          addresses = %w[user@foo,com user_at_foo.org example.user@foo.
@@ -95,7 +99,7 @@ describe User do					# Different tasks to perform on User instance
        end
     end
 
-# What to do when email format is not valid? Valid formats are specified in REGEX
+# What to do when email format is valid? Valid formats are specified in REGEX
     describe "when email format is valid" do
         it "should be valid" do
           addresses = %w[user@foo.COM A_US-ER@f.b.org frst.lst@foo.jp a+b@baz.cn]
