@@ -1,5 +1,5 @@
 SampleApp::Application.routes.draw do
-  get "users/new"
+ # get "users/new" is no longer needed : it does not add a user persay
   resources :users
   root  'static_pages#home'
   match '/signup',  to: 'users#new',            via: 'get'
