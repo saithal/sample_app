@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base 				# Defines all the validations that are
+  has_many :microposts, dependent: :destroy
   before_save { self.email = email.downcase }	
   before_create :create_remember_token				# needed in the user instance 
   validates :name, presence: true, length: { maximum: 50 }
@@ -15,6 +16,11 @@ class User < ActiveRecord::Base 				# Defines all the validations that are
 
   def User.encrypt(token)
     Digest::SHA1.hexdigest(token.to_s)
+  end
+
+	def feed
+    # This is preliminary. See "Following users" for the full implementation.
+    Micropost.where("user_id = ?", id)
   end
 
   private

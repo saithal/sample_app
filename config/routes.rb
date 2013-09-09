@@ -1,8 +1,8 @@
 SampleApp::Application.routes.draw do
-  get "users/new" #is no longer needed : it does not add a user persay
   resources :users
   resources :sessions, only:[:new, :create, :destroy]
-
+	resources :microposts, only: [:create, :destroy]
+  
   root  'static_pages#home'
 
   match '/signup',  to: 'users#new',            via: 'get'

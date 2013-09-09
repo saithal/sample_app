@@ -6,7 +6,7 @@ describe User do	# Different tasks to perform on User instance
      @user= User.new(	name: "Example User", 
 			email: "user@example.com", 
 			password: "foobar", 
-			password_confirmation: "foobar"
+			password_confirmation: "foobar"  #changed from password_confirmation
 		     )
    end
    
@@ -20,31 +20,34 @@ describe User do	# Different tasks to perform on User instance
     it { should respond_to(:remember_token) }
    	it { should respond_to(:authenticate) }
 	  it { should be_valid }	# Finally all should be valid 
+	  it { should respond_to(:admin) }
+	  it { should respond_to (:microposts) }
+	  it { should respond_to(:feed) }
   	it { should_not be_admin }
 
- 	describe "with admin attribute set to 'true'" do
+	describe "with admin attribute set to 'true'" do
     	before do
       	@user.save!
       	@user.toggle!(:admin)
     	end
 
     	it { should be_admin }
-   end
+  end
 
 
-   describe "remember token" do
+  describe "remember token" do
      before { @user.save }
      its(:remember_token) { should_not be_blank }
-   end
+  end
 
 # What to do in a situation when password is not present?
-   describe "when password is not present" do
+  describe "when password is not present" do
      before do
        @user = User.new(name: "Example User", email: "user@example.com",
                         password: " ", password_confirmation: " ")
      end
        it { should_not be_valid }			# User must not be valid 
-   end
+  end
 
 # What to do when password is confirmed in a valid way?
   describe "when password doesn't match confirmation" do
@@ -82,29 +85,29 @@ describe User do	# Different tasks to perform on User instance
   end 
  
 # What to do when name is too long as specified?
-   describe "when name is too long" do
+  describe "when name is too long" do
      before { @user.name = "a"*51 }
      it { should_not be_valid }
-   end 
+  end 
 
 # What to do when email is not present at all NOT empty.
-   describe "when email is not present" do
+  describe "when email is not present" do
      before { @user.email = ""}
      it { should_not be_valid }
-   end
+  end
 
 # What to do when email is already taken by some one else? It checks on duplication..
-   describe "when email address is already taken" do
+  describe "when email address is already taken" do
      before do
        user_with_same_email = @user.dup
        user_with_same_email.email = @user.email.upcase
        user_with_same_email.save
      end
        it { should_not be_valid }
-   end
+  end
 
 # What to do when email format is invalid? 
-   describe "when email format is invalid" do
+  describe "when email format is invalid" do
       it "should be invalid" do
          addresses = %w[user@foo,com user_at_foo.org example.user@foo.
                      foo@bar_baz.com foo@bar+baz.com]
@@ -113,10 +116,10 @@ describe User do	# Different tasks to perform on User instance
            expect(@user).not_to be_valid
          end
        end
-    end
+  end
 
 # What to do when email format is valid? Valid formats are specified in REGEX
-    describe "when email format is valid" do
+  describe "when email format is valid" do
         it "should be valid" do
           addresses = %w[user@foo.COM A_US-ER@f.b.org frst.lst@foo.jp a+b@baz.cn]
            addresses.each do |valid_address|
@@ -124,5 +127,38 @@ describe User do	# Different tasks to perform on User instance
               expect(@user).to be_valid
            end
          end
-     end
+  end
+  describe "micropost associations" do
+
+    before { @user.save }
+    let!(:older_micropost) do
+      FactoryGirl.create(:micropost, user: @user, created_at: 1.day.ago)
+    end
+    let!(:newer_micropost) do
+      FactoryGirl.create(:micropost, user: @user, created_at: 1.hour.ago)
+    end
+
+    it "should have the right microposts in the right order" do
+      expect(@user.microposts.to_a).to eq [newer_micropost, older_micropost]
+    end
+    
+    it "should destroy associated microposts" do
+      microposts = @user.microposts.to_a
+      @user.destroy
+      expect(microposts).not_to be_empty
+      microposts.each do |micropost|
+        expect(Micropost.where(id: micropost.id)).to be_empty
+      end
+    end
+    
+    describe "status" do
+      let(:unfollowed_post) do
+        FactoryGirl.create(:micropost, user: FactoryGirl.create(:user))
+      end
+
+      its(:feed) { should include(newer_micropost) }
+      its(:feed) { should include(older_micropost) }
+      its(:feed) { should_not include(unfollowed_post) }
+    end
+  end  
 end

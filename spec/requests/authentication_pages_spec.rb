@@ -69,7 +69,7 @@ describe "Authentication Pages" do
           	it { should have_title('Sign in') }
         	end
         end #users controller
-        
+       
 				describe "when attempting to visit a protected page" do
       		before do
         	  visit edit_user_path(user)
@@ -83,11 +83,8 @@ describe "Authentication Pages" do
       			it "should render the desired protected page" do
          		  expect(page).to have_title('Edit user')
 						end
-						
-
-					end
 					 
-			    describe "when signing in again" do
+			    	describe "when signing in again" do
 							before do
 								delete signout_path
 								visit signin_path
@@ -99,11 +96,24 @@ describe "Authentication Pages" do
 							it "should render the default (profile) page" do
 								expect(page).to have_title(user.name)
 							end
-		      
+		        end
 			    end
-			
 				end#attempting to visit a protected page
+				
+				describe "in the Microposts controller" do
+
+        	describe "submitting to the create action" do
+          	before { post microposts_path }
+          	specify { expect(response).to redirect_to(signin_path) }
+        	end
+
+        	describe "submitting to the destroy action" do
+          	before { delete micropost_path(FactoryGirl.create(:micropost)) }
+          	specify { expect(response).to redirect_to(signin_path) }
+        	end
+      	end
 			end # non singed in users
+ 			
  			describe "as wrong user" do
       		let(:user) { FactoryGirl.create(:user) }
       		let(:wrong_user) { FactoryGirl.create(:user, email: "wrong@example.com") }
